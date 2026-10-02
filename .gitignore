@@ -39,6 +39,9 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# Uploads (user-generated content)
+**/uploads/*
+
 # Vercel
 .vercel/
 .vercel_build/
