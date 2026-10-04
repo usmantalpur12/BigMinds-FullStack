@@ -39,46 +39,57 @@ jobs:
       - name: Install EAS CLI
         run: npm install -g eas-cli
 
+      - name: Verify EXPO_TOKEN
+        if: ${{ secrets.EXPO_TOKEN == '' }}
+        run: |
+          echo "::warning::⚠️ EXPO_TOKEN GitHub secret is not set."
+          echo "To enable automated APK builds, create an Expo access token at:"
+          echo "https://expo.dev/accounts/usmantalpur12/settings/access-tokens"
+          echo "Then add it as the EXPO_TOKEN secret in GitHub repo settings."
+          echo "Skipping EAS build for this run."
+
       - name: EAS Build
         id: eas-build
+        if: ${{ secrets.EXPO_TOKEN != '' }}
         run: |
           eas build --platform android \
             --profile ${{ inputs.build_profile || 'production' }} \
             --non-interactive \
-            --wait \
-            --output-dir ./build-artifacts
+            --wait
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
       - name: List APK artifacts
+        if: ${{ steps.eas-build.outcome == 'success' }}
         run: |
           echo "Searching for APK files..."
-          find ./build-artifacts -name "*.apk" -exec ls -la {} \;
+          find . -name "*.apk" -exec ls -la {} \;
           echo "---"
 
       - name: Upload APK Artifact
+        if: ${{ steps.eas-build.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: bigminds-apk
-          path: ./BigMindsEducation/build-artifacts/**/*.apk
+          path: ./BigMindsEducation/**/*.apk
           if-no-files-found: error
 
       - name: Create GitHub Release and Upload APK
-        if: github.event_name == 'release'
+        if: ${{ github.event_name == 'release' && steps.eas-build.outcome == 'success' }}
         uses: softprops/action-gh-release@v2
         with:
-          files: ./BigMindsEducation/build-artifacts/*.apk
+          files: ./BigMindsEducation/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Release (for workflow_dispatch)
-        if: github.event_name == 'workflow_dispatch'
+        if: ${{ github.event_name == 'workflow_dispatch' && steps.eas-build.outcome == 'success' }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: apk-build-${{ github.run_number }}
           name: APK Build - Run #${{ github.run_number }}
           prerelease: true
-          files: ./BigMindsEducation/build-artifacts/*.apk
+          files: ./BigMindsEducation/*.apk
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

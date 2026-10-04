@@ -30,6 +30,7 @@ export interface ApiResponse<T> {
   message?: string;
 }
 
+
 export interface User {
   id: string;
   name: string;
