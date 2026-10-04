@@ -5,3 +5,16 @@
 expo-env.d.ts
 # @end expo-cli
 node_modules
+# EAS Build artifacts
+.eas/
+build-artifacts/
+
+# Android build outputs
+android/app/build/
+android/build/
+
+# iOS build outputs  
+ios/build/
+
+# Expo
+.expo-shared/

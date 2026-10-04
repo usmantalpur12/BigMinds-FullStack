@@ -15,7 +15,7 @@ const DEV_PORT = '5000';
 // ✅ FIXED: Development mein local, production mein Vercel URL
 const API_BASE_URL = __DEV__
   ? `http://${LOCAL_IP}:${DEV_PORT}/api`
-  : 'https://bigminds-api.vercel.app/api'; // ✅ Correct Vercel URL
+    : 'https://bigminds-api-gilt.vercel.app/api'; // ✅ Deployed Vercel URL
 
 const TOKEN_KEY = 'bigminds_auth_token';
 
@@ -554,11 +554,28 @@ class ApiService {
   async submitQuiz(
     quizId: string,
     answers: Record<string, string>
-  ): Promise<ApiResponse<{ score: number; passed: boolean; feedback: any }>> {
+    ): Promise<ApiResponse<{ score: number; passed: boolean; feedback: any }>> {
     return this.makeRequest(`/quizzes/${quizId}/submit`, {
       method: 'POST',
       body: JSON.stringify({ answers }),
     });
+  }
+
+  // ─────────────────────────────────────────────
+  // APK Download / Jobs
+  // ─────────────────────────────────────────────
+
+  async getApkDownloadInfo(): Promise<ApiResponse<{
+    apkDownloadUrl: string;
+    version: string;
+    name: string;
+    publishedAt: string;
+    releaseUrl: string;
+    downloadCount: number;
+    size: number;
+    sizeFormatted: string;
+  }>> {
+    return this.makeRequest('/jobs/apk');
   }
 }
 

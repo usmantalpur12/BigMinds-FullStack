@@ -23,6 +23,7 @@ const assignmentRoutes = require("./routes/assignments");
 const courseDiscussionRoutes = require("./routes/courseDiscussion");
 const aiRoutes = require("./routes/ai");
 const profileRoutes = require("./routes/profile");
+const jobsRoutes = require("./routes/jobs");
 
 // Import middleware
 const { errorHandler } = require("./middleware/errorHandler");
@@ -100,9 +101,15 @@ app.use("/api/assignments", assignmentRoutes);
 app.use("/api/course-discussion", courseDiscussionRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/profile", profileRoutes);
+app.use("/api/jobs", jobsRoutes);
 
 // Error handling middleware
 app.use(errorHandler);
+
+// Export the Express app BEFORE async MongoDB connection.
+// In Vercel serverless functions, module-level exports must be available
+// synchronously — otherwise FUNCTION_INVOCATION_FAILED occurs.
+module.exports = app;
 
 // MongoDB connection and server startup: start listening only after DB connects
 const PORT = process.env.PORT || 5000;
@@ -214,9 +221,11 @@ mongoose
       });
     }
   })
-  .catch((err) => {
-    console.error("MongoDB connection failed:", err);
-    process.exit(1);
+    .catch((err) => {
+    console.error("MongoDB connection failed:", err.message);
+    // In serverless environments (Vercel), don't exit — let the function continue
+    // so that health check and other non-DB endpoints remain available.
+    if (!process.env.VERCEL) {
+      process.exit(1);
+    }
   });
-
-module.exports = app;

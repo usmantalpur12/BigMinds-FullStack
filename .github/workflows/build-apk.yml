@@ -1,0 +1,84 @@
+name: 📱 Build Android APK
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      build_profile:
+        description: 'Build Profile'
+        required: false
+        default: 'production'
+        type: choice
+        options:
+          - development
+          - preview
+          - production
+
+jobs:
+  build-apk:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./BigMindsEducation
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+          cache-dependency-path: BigMindsEducation/package-lock.json
+
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
+
+      - name: EAS Build
+        id: eas-build
+        run: |
+          eas build --platform android \
+            --profile ${{ inputs.build_profile || 'production' }} \
+            --non-interactive \
+            --wait \
+            --output-dir ./build-artifacts
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: List APK artifacts
+        run: |
+          echo "Searching for APK files..."
+          find ./build-artifacts -name "*.apk" -exec ls -la {} \;
+          echo "---"
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bigminds-apk
+          path: ./BigMindsEducation/build-artifacts/**/*.apk
+          if-no-files-found: error
+
+      - name: Create GitHub Release and Upload APK
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ./BigMindsEducation/build-artifacts/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Release (for workflow_dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-build-${{ github.run_number }}
+          name: APK Build - Run #${{ github.run_number }}
+          prerelease: true
+          files: ./BigMindsEducation/build-artifacts/*.apk
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

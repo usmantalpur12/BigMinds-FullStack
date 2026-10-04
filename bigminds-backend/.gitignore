@@ -1,3 +1,5 @@
 .vercel
 config.env
 .env
+.env*
+!.env.example
