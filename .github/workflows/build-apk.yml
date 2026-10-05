@@ -1,4 +1,4 @@
-name: 📱 Build Android APK
+﻿name: Build Android APK
 
 on:
   push:
@@ -37,7 +37,7 @@ jobs:
           cache-dependency-path: BigMindsEducation/package-lock.json
 
       - name: Install EAS CLI
-                run: npm install -g eas-cli
+        run: npm install -g eas-cli
 
       - name: Check EXPO_TOKEN
         id: check-token
@@ -53,7 +53,7 @@ jobs:
       - name: Verify EXPO_TOKEN
         if: steps.check-token.outputs.token_set == 'false'
         run: |
-          echo "::warning::⚠️ EXPO_TOKEN GitHub secret is not set."
+          echo "::warning::EXPO_TOKEN GitHub secret is not set."
           echo "To enable automated APK builds, create an Expo access token at:"
           echo "https://expo.dev/accounts/usmantalpur12/settings/access-tokens"
           echo "Then add it as the EXPO_TOKEN secret in GitHub repo settings."
