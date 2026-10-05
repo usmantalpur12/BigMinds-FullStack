@@ -55,7 +55,7 @@ jobs:
         run: |
           echo "::warning::EXPO_TOKEN GitHub secret is not set."
           echo "To enable automated APK builds, create an Expo access token at:"
-          echo "https://expo.dev/accounts/usmantalpur12/settings/access-tokens"
+          echo "https://expo.dev/accounts/usmantalpur/settings/access-tokens"
           echo "Then add it as the EXPO_TOKEN secret in GitHub repo settings."
           echo "Skipping EAS build for this run."
 
